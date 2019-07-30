@@ -21,7 +21,7 @@ class Goal:
         self.sprite = eng.Sprite(self, 'goal.png')
 
     def is_reached(self, cube):
-        if cube.x in range(self.x, self.x + 10) and cube.y in range(self.y , self.y + 4):
+        if cube.x in range(self.x, self.x + 20) and cube.y in range(self.y , self.y + 8):
             return True
         else:
             return False
@@ -30,7 +30,7 @@ class Goal:
 class Brain:
     def __init__(self, gen_data):
         if gen_data is True:
-            self.data = [choice(directions) for i in range(0, 99)]
+            self.data = [choice(directions) for i in range(0, 350)]
         else:
             self.data = []
         self.data_index = -1
@@ -68,13 +68,16 @@ class DarwinCube:
 
         if goal.is_reached(self) is True:
             self.goal_reached = True
-            eng.engineTick.remove(self.move)
+            try:
+                eng.engineTick.remove(self.move)
+            except ValueError:
+                pass
 
     def compute_score(self):
-        self.score = int(5000 - eng.distance(goal, self) * 10 - self.brain.data_index)
+        self.score = (int(5000 - eng.distance(goal, self) * 10 - self.brain.data_index)) * 2
 
     def evolve(self):
-        for i in range(0, randrange(int(len(self.brain.data) / 100), int(len(self.brain.data) / 10))):
+        for i in range(0, randrange(int(len(self.brain.data) / 100), int(len(self.brain.data) / 50) + 1)):
             self.brain.data[randrange(0, len(self.brain.data) - 1)] = choice(directions)
 
 
@@ -105,7 +108,7 @@ def end_sim():
         return
     sim_status = 'end'
     eng.engineTick.purge()
-    eng.schedule(1, restart_sim)
+    eng.schedule(5, restart_sim)
 
 
 def restart_sim():
@@ -113,6 +116,9 @@ def restart_sim():
     global pop
     for cube in pop:
         cube.compute_score()
+
+    for cube in pop:
+        cube.sprite.delete()
 
     pop.sort(key=lambda x: x.score, reverse=True)
     best = pop[0]
@@ -122,8 +128,7 @@ def restart_sim():
     new_pop = []
     for old_cube in pop:
         new_cube = DarwinCube(int(eng.engine_setting['resolution'][0] / 2), int(eng.engine_setting['resolution'][1] / 4 * 3), gen_data=False)
-        new_cube.brain.data = old_cube.brain.data
-        old_cube.sprite.delete()
+        new_cube.brain.data = old_cube.brain.data.copy()
         new_pop.append(new_cube)
         del old_cube
 
