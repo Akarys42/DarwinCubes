@@ -1,6 +1,7 @@
 import pyxel_engine as eng
 import logging
 from random import choice, choices, randrange
+from time import time
 
 
 eng.engine_setting['logging_level'] = logging.INFO
@@ -11,6 +12,8 @@ eng.engine_setting['TPS'] = 100
 directions = ((0, 1), (0, -1), (1, 0), (-1, 0))
 
 pop = []
+
+gen = 0
 
 
 class Goal:
@@ -109,11 +112,13 @@ def end_sim():
     sim_status = 'end'
     eng.engineTick.purge()
     eng.schedule(5, restart_sim)
+    logging.info(f'Simulation {gen} ended !')
 
 
 def restart_sim():
     global sim_status
     global pop
+    start = time()
     for cube in pop:
         cube.compute_score()
 
@@ -133,11 +138,12 @@ def restart_sim():
         del old_cube
 
     pop = new_pop
-    print(len(pop))
     for cube in pop:
         cube.evolve()
 
     sim_status = 'run'
+
+    logging.info(f'Evolution calculated in {str(time() - start)[:5]}s. Best score was {best.score}.')
 
 
 eng.start_engine()
