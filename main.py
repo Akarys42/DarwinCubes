@@ -77,7 +77,8 @@ class DarwinCube:
                 pass
 
     def compute_score(self):
-        self.score = (int(5000 - eng.distance(goal, self) * 10 - self.brain.data_index)) * 2
+        self.score = (int(5000 - eng.distance({'x': int(eng.engine_setting['resolution'][0] / 2),
+                                               'y': int(eng.engine_setting['resolution'][1] / 4)}, self) * 10 - self.brain.data_index)) * 2
 
     def evolve(self):
         for i in range(0, randrange(int(len(self.brain.data) / 100), int(len(self.brain.data) / 50) + 1)):
